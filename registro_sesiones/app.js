@@ -2,6 +2,9 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+const connection= require('./database/db.js');
+
+connection.query
 
 //2. Capturar datos del formulario usando formato json
 app.use(express.urlencoded({extended:false}));
@@ -20,7 +23,7 @@ app.use('/resources', express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
 
 //6. Cargamos bcriptjs
-const bcriptjs = require('bcryptjs');
+//const bcriptjs = require('bcryptjs');
 
 //7. Variables de sesion
 const session = require('express-session');
@@ -30,135 +33,12 @@ app.use(session({
     saveUninitialized: true
 }));
 
-//8. cargamos módulo de conexión y establecemos rutas
-const connection = require('./database/db');
-
-//9. Establecemos las rutas
-//app.get('/', (req, res)=>{
-    //res.send("<h1>Index</h1>");
-//    res.render('index', {msg: 'Melissa'});
-//})
-
-app.get('/login', (req, res)=>{
-    //res.send("<h1>pagina de login</h1>");
-    res.render('login');
-});
-
-app.get('/register', (req, res)=>{
-    //res.send("<h1>Pagina de registro</h1>");
-    res.render('register');
-})
-//Cargamos modulo de sweetalert
-const swal = require("sweetalert2");
+const rutas = require('./src/rutas.js');
+//estableciendo el uso de rutas.
+app.use('/', rutas);
 
 const { fileLoader } = require('ejs');
-
-//10 registro
-app.post('/register', async(req, res)=>{
-    //variables para guardar la info de los campos
-    const email = req.body.email;
-    const name = req.body.name;
-    const rol = req.body.rol;
-    const pass = req.body.pass;
-
-    // variable donde guardamos el password pasado por hash
-    let passwordHash = await bcriptjs.hash(pass, 8);
-    connection.query('SELECT * FROM users WHERE email = ?', [email], async(error, results) => {
-        if(results.length == 0){
-            //insertamos los datos en nuestra bbdd
-            connection.query('INSERT INTO users SET ?', {
-                email: email,
-                name: name,
-                rol: rol,
-                pass: passwordHash }, 
-                async (error, results) => {
-                    //console.log(results);
-                    if(error){
-                        console.log("error al escribir en la base de datos Numero: " + error);
-                    }else{
-                        //console.log("Alta exitosa");
-                        res.render('register', {
-                            alert: true,
-                            alertTitle: "Registro",
-                            alertMessage: "¡Registro exitoso!",
-                            alertIcon:'success',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            ruta: ''
-                        });
-                    }
-                }
-            )
-        } else {
-            res.render('register', {
-                alert: true,
-                alertTitle: "Registro",
-                alertMessage: "Ese usuario ya existe! Inténtalo otra vez",
-                alertIcon: 'warning',
-                showConfirmButton: false,
-                timer: 1500,
-                ruta: 'register'
-            });
-        }
-    })
-            
-})
-
-//11. Metodo para autenticar el post definido como /auth
-app.post('/auth', async(req, res)=> {
-    const email = req.body.email;
-    const pass = req.body.pass;
-    let passwordHash = await bcriptjs.hash(pass, 8);
-    
-    //comprobamos si existe usuario y contraseña
-    if(email && pass){
-        connection.query('SELECT * FROM users WHERE email = ?', [email], async (error, results, fields)=>{
-            //comprobamos que exista el usuario
-            if(results.length == 0 || !(await bcriptjs.compare(pass, results[0].pass)) ){
-                //msj que la autenticación es incorrecta
-                //res.send('<h1>Usuario o contraseña incorrecta</h1>');
-                //console.log(error);
-                res.render('login', {
-                    alert: true,
-                    alertTitle: "Login",
-                    alertMessage: "Usuario o password incorrecto",
-                    alertIcon:'error',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    ruta: 'login'
-                });
-            } else {
-                //msj que se ha autentificado correctamente
-                //res.send('<h1>Logueado correctamente</h1>');
-                //console.log(results);
-                //creamos variable de sesion y le ponemos verdadero
-                req.session.loggedin = true;
-                //cargamos el nombre de la bbdd que hemos buscado
-                req.session.name = results[0].name;
-
-                res.render('login', {
-                    alert: true,
-                    alertTitle: "Login",
-                    alertMessage: "Esta usted correctamente logueado!",
-                    alertIcon:'success',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    ruta: '',
-                });
-            }
-        });
-    } else {
-        res.render('login', {
-            alert: true,
-            alertTitle: "Advertencia",
-            alertMessage: "Ingrese email y contraseña",
-            alertIcon:'warning',
-            showConfirmButton: true,
-            timer: 1500,
-            ruta: 'login',
-        });
-    }
-});
+const con = require('./database/db.js');
 
 //12 - Método para controlar que está auth en todas las páginas
 app.get('/', (req, res)=> {
@@ -196,8 +76,5 @@ app.use(function(req, res, next) {
 
 app.listen(port, (req, res)=>{
     console.log("we are listening in port " + port);
-    console.log('http://localhost:3000/')
-})
-
-
-
+    console.log('http://localhost:' + port + '/');
+});
