@@ -1,12 +1,15 @@
 //cargamos el modulo mysql
 const mysql = require('mysql');
 
+console.log(process.env.DB_HOST);
+console.log("llegamos aqui");
+
 //creamos conexión a base de datos
 const con = mysql.createConnection({
     host: process.env.DB_HOST,
-    user: 'root',
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: 'login_node_curso',
+    database: process.env.DB_DATABASE,
 });
 con.connect((error) => {
     if(error){

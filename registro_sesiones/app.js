@@ -2,17 +2,17 @@
 const express = require('express');
 const app = express();
 const port = 3000;
-const connection= require('./database/db.js');
+//const connection= require('./database/db.js');
 
-connection.query
+//connection.query
 
 //2. Capturar datos del formulario usando formato json
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
-
 //3. Cargamos dotenv y asignamos variables de entorno.
 const dotenv = require('dotenv');
-dotenv.config({path: './env/.env'});
+console.log(dotenv);
+dotenv.config('path: ./env/.env');
 
 //4. cargamos el directorio public, cada vez que llamamos resources estaremos cargando el dir public.
 //al utilizar el __dirname podemos mover el proyecto de carpeta y sin tener que actualizar rutas.
@@ -22,8 +22,6 @@ app.use('/resources', express.static(__dirname + '/public'));
 //5. Establecer el motor de plantilla
 app.set('view engine', 'ejs');
 
-//6. Cargamos bcriptjs
-//const bcriptjs = require('bcryptjs');
 
 //7. Variables de sesion
 const session = require('express-session');
@@ -38,6 +36,7 @@ const rutas = require('./src/rutas.js');
 app.use('/', rutas);
 
 const { fileLoader } = require('ejs');
+
 const con = require('./database/db.js');
 
 //12 - Método para controlar que está auth en todas las páginas
